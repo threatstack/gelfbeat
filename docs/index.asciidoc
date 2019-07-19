@@ -1,0 +1,5 @@
+= Gelfbeat Docs
+
+Welcome to the Gelfbeat documentation.
+
+

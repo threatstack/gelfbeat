@@ -1,0 +1,5 @@
+gelfbeat
+Copyright 2019 Patrick Cable
+
+This product includes software developed by The Apache Software
+Foundation (http://www.apache.org/).
