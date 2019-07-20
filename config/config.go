@@ -3,12 +3,13 @@
 
 package config
 
-import "time"
-
 type Config struct {
-	Period time.Duration `config:"period"`
+	Listen string `config:"listen"`
+	Port   int    `config:"port"`
 }
 
 var DefaultConfig = Config{
-	Period: 1 * time.Second,
+	Listen: "127.0.0.1",
+	Port:   12201,
 }
+

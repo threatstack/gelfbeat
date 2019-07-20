@@ -42,26 +42,30 @@ func (bt *Gelfbeat) Run(b *beat.Beat) error {
 		return err
 	}
 
-	ticker := time.NewTicker(bt.config.Period)
-	counter := 1
+	var packet = make(chan string)
+	go listen(packet, bt.config)
+
 	for {
+		var jsonMessage string
 		select {
 		case <-bt.done:
 			return nil
-		case <-ticker.C:
+		case jsonMessage = <-packet:
+		}
+
+		if err != nil {
+			return err
 		}
 
 		event := beat.Event{
 			Timestamp: time.Now(),
 			Fields: common.MapStr{
-				"type":    b.Info.Name,
-				"counter": counter,
+				"message": jsonMessage,
 			},
 		}
 		bt.client.Publish(event)
-		logp.Info("Event sent")
-		counter++
 	}
+
 }
 
 // Stop stops gelfbeat.
@@ -69,3 +73,4 @@ func (bt *Gelfbeat) Stop() {
 	bt.client.Close()
 	close(bt.done)
 }
+
