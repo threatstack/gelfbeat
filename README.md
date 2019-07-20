@@ -3,8 +3,8 @@ Have you ever needed to take GELF-encoded (gzipped and/or chunked) UDP input and
 
 ## Acknowledgements
 Thanks to:
-* Tim Tkachenko for [gelf-go](https://github.com/timtkachenko/gelf-go) - this project wouldnt have come together without his 
-* Elastic for [libbeat](https://github.com/elastic/beats/tree/master/libbeat)
+* Tim Tkachenko for [gelf-go](https://github.com/timtkachenko/gelf-go) - this project wouldnt have come together without his GELF parser
+* Elastic for modularizing Beats into [libbeat](https://github.com/elastic/beats/tree/master/libbeat)
 
 ## Support
 This is a tool we're using internally, but it's not an offically supported item. We're happy to take pull requests, but the main reason we're releasing this is that it might help other folks in the same pickle. Support on this tool is best-effort; we make no guarantees or warranties that this will work in your environment.
