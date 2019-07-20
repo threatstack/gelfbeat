@@ -1,116 +1,61 @@
-# Gelfbeat
+# GELFbeat
+Have you ever needed to take GELF-encoded (gzipped and/or chunked) UDP input and send it to Graylog? Logstash? Elasticsearch? Something else that takes a Beats output? GELFbeat is for you.
 
-Welcome to Gelfbeat.
+## Acknowledgements
+Thanks to:
+* Tim Tkachenko for [gelf-go](https://github.com/timtkachenko/gelf-go) - this project wouldnt have come together without his 
+* Elastic for [libbeat](https://github.com/elastic/beats/tree/master/libbeat)
 
-Ensure that this folder is at the following location:
-`${GOPATH}/src/github.com/threatstack/gelfbeat`
+## Support
+This is a tool we're using internally, but it's not an offically supported item. We're happy to take pull requests, but the main reason we're releasing this is that it might help other folks in the same pickle. Support on this tool is best-effort; we make no guarantees or warranties that this will work in your environment.
 
-## Getting Started with Gelfbeat
+## Using GELFbeat
+Beacuse this uses `libbeat` 7.2, many of the same processors, outputs, etc. apply here - GELFbeat only takes an IP address to listen on, and a port for configuration. You'll have to look at the [Filebeat documentation](https://www.elastic.co/guide/en/beats/filebeat/7.2/index.html) to figure out what works for other parts of the configuration file, specifically processors and outputs.
 
-### Requirements
-
-* [Golang](https://golang.org/dl/) 1.7
-
-### Init Project
-To get running with Gelfbeat and also install the
-dependencies, run the following command:
-
-```
-make setup
-```
-
-It will create a clean git history for each major step. Note that you can always rewrite the history if you wish before pushing your changes.
-
-To push Gelfbeat in the git repository, run the following commands:
+Here's an example `gelfbeat.yml`:
 
 ```
-git remote set-url origin https://github.com/threatstack/gelfbeat
-git push origin master
+---
+fields_under_root: true
+gelfbeat:
+  listen: 127.0.0.1
+  port: 10000
+processors:
+ - decode_json_fields:
+     fields: ['message']
+     target: json
+     overwrite_keys: true
+     target: ""
+fields:
+  environment: prod
+output.logstash:
+  hosts:
+  - graylog.tls.zone:25044
+  ssl:
+    enabled: true
+    supported_protocols:
+    - TLSv1.2
 ```
 
-For further development, check out the [beat developer guide](https://www.elastic.co/guide/en/beats/libbeat/current/new-beat.html).
+Then, run the tool with `gelfbeat -c gelfbeat.yml -e` and send GELF-encoded messages to `127.0.0.1:10000`.
 
-### Build
-
-To build the binary for Gelfbeat run the command below. This will generate a binary
-in the same directory with the name gelfbeat.
+## A systemd unit file
+This assumes all of the paths below exist. Toss this in `/etc/systemd/system/gelfbeat.service`:
 
 ```
-make
+[Unit]
+Description=Gelfbeat sends log files to Logstash or directly to Elasticsearch.
+Documentation=https://github.com/threatstack/gelfbeat
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Environment="BEAT_LOG_OPTS=-e"
+Environment="BEAT_CONFIG_OPTS=-c /etc/gelfbeat/gelfbeat.yml"
+Environment="BEAT_PATH_OPTS=-path.home /usr/share/gelfbeat -path.config /etc/gelfbeat -path.data /var/lib/gelfbeat -path.logs /var/log/gelfbeat"
+ExecStart=/usr/share/gelfbeat/bin/gelfbeat $BEAT_LOG_OPTS $BEAT_CONFIG_OPTS $BEAT_PATH_OPTS
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
 ```
-
-
-### Run
-
-To run Gelfbeat with debugging output enabled, run:
-
-```
-./gelfbeat -c gelfbeat.yml -e -d "*"
-```
-
-
-### Test
-
-To test Gelfbeat, run the following command:
-
-```
-make testsuite
-```
-
-alternatively:
-```
-make unit-tests
-make system-tests
-make integration-tests
-make coverage-report
-```
-
-The test coverage is reported in the folder `./build/coverage/`
-
-### Update
-
-Each beat has a template for the mapping in elasticsearch and a documentation for the fields
-which is automatically generated based on `fields.yml` by running the following command.
-
-```
-make update
-```
-
-
-### Cleanup
-
-To clean  Gelfbeat source code, run the following command:
-
-```
-make fmt
-```
-
-To clean up the build directory and generated artifacts, run:
-
-```
-make clean
-```
-
-
-### Clone
-
-To clone Gelfbeat from the git repository, run the following commands:
-
-```
-mkdir -p ${GOPATH}/src/github.com/threatstack/gelfbeat
-git clone https://github.com/threatstack/gelfbeat ${GOPATH}/src/github.com/threatstack/gelfbeat
-```
-
-
-For further development, check out the [beat developer guide](https://www.elastic.co/guide/en/beats/libbeat/current/new-beat.html).
-
-
-## Packaging
-
-The beat frameworks provides tools to crosscompile and package your beat for different platforms. This requires [docker](https://www.docker.com/) and vendoring as described above. To build packages of your beat, run the following command:
-
-```
-make release
-```
-
-This will fetch and create all images required for the build process. The whole process to finish can take several minutes.
