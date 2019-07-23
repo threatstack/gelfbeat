@@ -1,6 +1,7 @@
 package beater
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -57,11 +58,16 @@ func (bt *Gelfbeat) Run(b *beat.Beat) error {
 			return err
 		}
 
+		var m GELFDecodedMessage
+		err = json.Unmarshal([]byte(jsonMessage), &m)
+
+		if err != nil {
+			return err
+		}
+
 		event := beat.Event{
 			Timestamp: time.Now(),
-			Fields: common.MapStr{
-				"message": jsonMessage,
-			},
+			Fields:    common.MapStr(m),
 		}
 		bt.client.Publish(event)
 	}
@@ -73,4 +79,3 @@ func (bt *Gelfbeat) Stop() {
 	bt.client.Close()
 	close(bt.done)
 }
-
