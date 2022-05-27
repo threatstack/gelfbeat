@@ -1,4 +1,6 @@
 gelfbeat
+
+Portions generated from code licensed to Elasticsearch B.V. under CLA.
 Copyright 2019-2022 F5 Inc.
 
 This product includes software developed by The Apache Software
