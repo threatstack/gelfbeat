@@ -1,3 +1,6 @@
+// Copyright 2019-2022 F5 Inc.
+// See LICENSE.txt for the Apache-2 License.
+
 package beater
 
 import (
@@ -36,4 +39,3 @@ func msgCheck(testBytes []byte) []byte {
 	return out.Bytes()
 
 }
-
